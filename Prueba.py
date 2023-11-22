@@ -34,13 +34,14 @@ class Lienzo:
     def MouseClick(self, event):
         print("Click")
         if event.xdata is not None and event.ydata is not None:
-            node_id = len(self.graph.nodes) + 1
-            self.graph.add_node(node_id)
-            self.pos[node_id] = (event.xdata, event.ydata)
             if self.main_window.dibNodoIsSelected():
-                self.DibujarGrafo()
-            else:
-                print()
+                node_id = len(self.graph.nodes) + 1
+                self.graph.add_node(node_id)
+                self.pos[node_id] = (event.xdata, event.ydata)
+                if self.main_window.dibNodoIsSelected():
+                    self.DibujarGrafo()
+                else:
+                    print()
 
     def DibujarGrafo(self):
         # Guardar temporalmente el color del borde del rectángulo

@@ -10,12 +10,12 @@ class MiDialogo(QDialog):
         self.setWindowTitle('Ingresar Valores')
         layout = QVBoxLayout(self)
 
-        label1 = QLabel('Valor 1:')
+        label1 = QLabel('Nodo Padre:')
         self.edit1 = QLineEdit(self)
         layout.addWidget(label1)
         layout.addWidget(self.edit1)
 
-        label2 = QLabel('Valor 2:')
+        label2 = QLabel('Nodo Hijo:')
         self.edit2 = QLineEdit(self)
         layout.addWidget(label2)
         layout.addWidget(self.edit2)
@@ -28,8 +28,6 @@ class MiDialogo(QDialog):
         # Obtener los valores de los QLineEdit
         valor1 = self.edit1.text()
         valor2 = self.edit2.text()
-
-        # Puedes realizar validaciones aquí antes de aceptar los valores
 
         # Almacenar los valores como atributos de la instancia
         self.valor1 = valor1
