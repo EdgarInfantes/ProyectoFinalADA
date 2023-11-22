@@ -40,8 +40,6 @@ class Lienzo:
                 self.pos[node_id] = (event.xdata, event.ydata)
                 if self.main_window.dibNodoIsSelected():
                     self.DibujarGrafo()
-                else:
-                    print()
 
     def DibujarGrafo(self):
         # Guardar temporalmente el color del borde del rectángulo
@@ -206,12 +204,11 @@ class MainWindow(QWidget):
         if state:
             # Asignar la función DibujarArista al evento 'button_press_event'
             self.lienzo.fig.canvas.mpl_disconnect(self.lienzo.cid)
-            self.lienzo.cid = self.lienzo.fig.canvas.mpl_connect('button_press_event', self.lienzo.MouseClick)
             self.btnDibujar.setEnabled(True)
         else:
             # Restaurar la función MouseClick al evento 'button_press_event'
             self.lienzo.fig.canvas.mpl_disconnect(self.lienzo.cid)
-            self.lienzo.cid = self.lienzo.fig.canvas.mpl_connect('button_press_event', self.MouseClickArista)
+            self.lienzo.cid = self.lienzo.fig.canvas.mpl_connect('button_press_event', self.lienzo.MouseClick)
             self.btnDibujar.setEnabled(False)
 
     def dibNodoIsSelected(self):
@@ -233,10 +230,10 @@ class MainWindow(QWidget):
     def PideNodos(self):
         dialogo = MiDialogo()
         resultado = dialogo.exec_()
-        
         if resultado == QDialog.Accepted:
             valor1 = dialogo.valor1
             valor2 = dialogo.valor2
+            print(self.lienzo.graph.nodes()) # Para ver los Nodos
             self.lienzo.DibujarArista(int(valor1), int(valor2))
 
         
