@@ -184,7 +184,7 @@ class MainWindow(QWidget):
 
         self.setGeometry(100, 100, 800, 400)
         self.setWindowTitle('Grafos')
-
+        
         # Conectar la función onRadioButtonToggled al evento toggled de rbDibArista
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
