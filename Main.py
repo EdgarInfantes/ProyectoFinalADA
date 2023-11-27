@@ -184,6 +184,10 @@ class MainWindow(QMainWindow):
         btnBFS=QAction('BFS-Busqueda en anchura', self)
         btnBFS.triggered.connect(self.BFS)
         menuAlgoritmos.addAction(btnBFS)
+        
+        btnKruskal=QAction('Kruskal-Arbol de expansión mínima', self)
+        btnKruskal.triggered.connect(self.KRUSKAL)
+        menuAlgoritmos.addAction(btnKruskal)
 
 
         # ESCENA DE INICIO POR DEFECTO
@@ -210,18 +214,17 @@ class MainWindow(QMainWindow):
 
     #Otras Funciones
     def GuardarImagen(self):
-        global centralWidget 
         centralWidget.GuardarImagen()
 
     #Funciones para ejecutar los algoritmos
     def BFS(self):
         print("BFS ENTRE MAIN")
-        global centralWidget 
         print(centralWidget.BFS(1))
+    def KRUSKAL(self):
+        centralWidget.KRUSKAL()
     def dibujaPruebaGrafo(self):
-        global centralWidget 
         centralWidget.DibujaPrueba()
-            
+    
 class PanelVista(QWidget):
     def __init__(self,escalaAncho, escalaAlto):
         super().__init__()
@@ -402,10 +405,26 @@ class PanelVista(QWidget):
                     queue.append((neighbor, node))
 
         self.lienzo.setAristaColor(aristas,"blue")
+    def KRUSKAL(self):
+        grafo=self.lienzo.getPesos()
+        grafoSorted= op.getSortAristas(grafo)
+        visitados=set()
+        camino=[]
+        cola=deque()
+        for arista,peso in grafoSorted:
+            cola.append((arista))
+        while cola:
+            nodo1, nodo2 = cola.popleft() 
+            if(nodo1 not in visitados or nodo2 not in visitados):
+                if(nodo1 not in visitados ):
+                    visitados.add(nodo1)
+                if(nodo2 not in visitados ):
+                    visitados.add(nodo2)  
+                    tuplaArista=(nodo1 , nodo2)
+                    print(tuplaArista)
+                    camino.append(tuplaArista)
 
-
-
-
+        self.lienzo.setAristaColor(camino,"blue")
 class Panel(QWidget):
     def __init__(self):
         super().__init__()
