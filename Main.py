@@ -170,7 +170,10 @@ class MainWindow(QMainWindow):
         #SUBMENUS para Menu Archivo
         btnGuardarImagen=QAction('Guardar Imagen', self)
         btnGuardarImagen.triggered.connect(self.GuardarImagen)
+        #btnLimpiar = QAction('Limpiar Lienzo', self)
+        #btnLimpiar.triggered.connect()
         menuArchivo.addAction(btnGuardarImagen)
+        #menuArchivo.addAction(btnLimpiar)
         #SUBMENUS ALGORITMOS
         #BFS
         btnBFS=QAction('BFS-Busqueda en anchura', self)
@@ -234,11 +237,13 @@ class PanelVista(QWidget):
         self.rbDibNodo = QRadioButton('Dibujar Nodo')
         self.rbDibArista = QRadioButton('Dibujar Arista')
         self.btnDibujar = QPushButton('Ingresar Puntos')
+        self.btnLimpiar = QPushButton('Limpiar')
 
         cbzBotones_layout=QHBoxLayout()
         cbzBotones_layout.addWidget(self.rbDibNodo)
         cbzBotones_layout.addWidget(self.rbDibArista)
         cbzBotones_layout.addWidget(self.btnDibujar)
+        cbzBotones_layout.addWidget(self.btnLimpiar)
         cbzBotones.setLayout(cbzBotones_layout)
         
         # Asignar un nombre específico a cada radio button
@@ -275,6 +280,7 @@ class PanelVista(QWidget):
          # Conectar la función onRadioButtonToggled al evento toggled de rbDibArista
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
+        self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
