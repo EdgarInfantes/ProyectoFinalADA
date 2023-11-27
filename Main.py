@@ -44,7 +44,8 @@ class Lienzo:
         self.ax.add_patch(self.rect)
 
     def DibujarArista(self, posNodo1, posNodo2,peso=1):
-        print(f"HOLIS: {posNodo1} , {posNodo2}")
+        #with open("Aristas.txt", 'a') as archivo:
+        #   archivo.write(f"({posNodo1}, {posNodo2}, {peso})\n")
         if posNodo1 in self.graph.nodes() and posNodo2 in self.graph.nodes():
             self.graph.add_edge(posNodo1, posNodo2,weight=peso)
             self.edge_colors[(posNodo1, posNodo2)] = "black"
@@ -68,12 +69,14 @@ class Lienzo:
         alerta.exec_()
 
     def MouseClick(self, event):
-        print("Click")
+        #print("Click")
         if event.xdata is not None and event.ydata is not None:
             if self.main_window.dibNodoIsSelected():
                 node_id = len(self.graph.nodes) + 1
                 self.graph.add_node(node_id)
                 self.pos[node_id] = (event.xdata, event.ydata)
+                #with open("Nodos.txt", 'a') as archivo:
+                #    archivo.write(f"({node_id}, {event.xdata}, {event.ydata})\n")
                 if self.main_window.dibNodoIsSelected():
                     self.DibujarGrafo()
 
@@ -170,10 +173,10 @@ class MainWindow(QMainWindow):
         #SUBMENUS para Menu Archivo
         btnGuardarImagen=QAction('Guardar Imagen', self)
         btnGuardarImagen.triggered.connect(self.GuardarImagen)
-        #btnLimpiar = QAction('Limpiar Lienzo', self)
-        #btnLimpiar.triggered.connect()
         menuArchivo.addAction(btnGuardarImagen)
-        #menuArchivo.addAction(btnLimpiar)
+
+        #Sub Menú Grafos
+
         #SUBMENUS ALGORITMOS
         #BFS
         btnBFS=QAction('BFS-Busqueda en anchura', self)
@@ -213,6 +216,7 @@ class MainWindow(QMainWindow):
         print("BFS ENTRE MAIN")
         global centralWidget 
         print(centralWidget.BFS(1))
+        
             
 class PanelVista(QWidget):
     def __init__(self,escalaAncho, escalaAlto):
@@ -238,12 +242,14 @@ class PanelVista(QWidget):
         self.rbDibArista = QRadioButton('Dibujar Arista')
         self.btnDibujar = QPushButton('Ingresar Puntos')
         self.btnLimpiar = QPushButton('Limpiar')
+        self.btnPrueba = QPushButton('Prueba')
 
         cbzBotones_layout=QHBoxLayout()
         cbzBotones_layout.addWidget(self.rbDibNodo)
         cbzBotones_layout.addWidget(self.rbDibArista)
         cbzBotones_layout.addWidget(self.btnDibujar)
         cbzBotones_layout.addWidget(self.btnLimpiar)
+        cbzBotones_layout.addWidget(self.btnPrueba)
         cbzBotones.setLayout(cbzBotones_layout)
         
         # Asignar un nombre específico a cada radio button
@@ -281,6 +287,32 @@ class PanelVista(QWidget):
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
         self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
+        self.btnPrueba.clicked.connect(self.DibujaPrueba)
+    
+    def DibujaPrueba(self):
+        self.LimpiarLienzo()
+
+        with open("Nodos.txt") as archivo:
+            lineas = archivo.readlines()
+            for linea in lineas:
+                partes = linea.split(", ")
+                if len(partes) >= 3:
+                    # Obtener el id, la posición x y la posición y
+                    node_id = int(partes[0].strip("()"))
+                    posiX = float(partes[1])
+                    posiY = float(partes[2].strip(")\n"))
+                    self.lienzo.graph.add_node(node_id)
+                    self.lienzo.pos[node_id] = (posiX, posiY)
+                    self.lienzo.DibujarGrafo()
+        
+        with open("Aristas.txt") as aristas:
+            lineas = aristas.readlines()
+            for linea in lineas:
+                partes = linea.split(", ")
+                padre = int(partes[0].strip("()"))
+                hijo = int(partes[1])
+                peso = int(partes[2].strip(")\n"))
+                self.lienzo.DibujarArista(padre, hijo, peso)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -328,6 +360,8 @@ class PanelVista(QWidget):
             valor2 = dialogo.valor2
             valor3 = dialogo.valor3
             print(self.lienzo.graph.nodes()) # Para ver los Nodos
+            print(self.lienzo.graph.edges())
+
             if valor1 != None and valor2 != None and valor3 != None:
                 self.lienzo.DibujarArista(int(valor1), int(valor2),int(valor3))
             else:
