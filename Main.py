@@ -175,8 +175,10 @@ class MainWindow(QMainWindow):
         btnGuardarImagen.triggered.connect(self.GuardarImagen)
         menuArchivo.addAction(btnGuardarImagen)
 
-        #Sub Menú Grafos
-
+        #SUBMENUS para Grafos
+        btnGrafoPrueba=QAction('Grafo de Prueba', self)
+        btnGrafoPrueba.triggered.connect(self.dibujaPruebaGrafo)
+        menuGrafos.addAction(btnGrafoPrueba)
         #SUBMENUS ALGORITMOS
         #BFS
         btnBFS=QAction('BFS-Busqueda en anchura', self)
@@ -205,7 +207,7 @@ class MainWindow(QMainWindow):
                            "}")
         
         self.addDockWidget(Qt.LeftDockWidgetArea, self.dock_widget)
-    
+
     #Otras Funciones
     def GuardarImagen(self):
         global centralWidget 
@@ -216,7 +218,9 @@ class MainWindow(QMainWindow):
         print("BFS ENTRE MAIN")
         global centralWidget 
         print(centralWidget.BFS(1))
-        
+    def dibujaPruebaGrafo(self):
+        global centralWidget 
+        centralWidget.DibujaPrueba()
             
 class PanelVista(QWidget):
     def __init__(self,escalaAncho, escalaAlto):
@@ -242,14 +246,14 @@ class PanelVista(QWidget):
         self.rbDibArista = QRadioButton('Dibujar Arista')
         self.btnDibujar = QPushButton('Ingresar Puntos')
         self.btnLimpiar = QPushButton('Limpiar')
-        self.btnPrueba = QPushButton('Prueba')
+      
 
         cbzBotones_layout=QHBoxLayout()
         cbzBotones_layout.addWidget(self.rbDibNodo)
         cbzBotones_layout.addWidget(self.rbDibArista)
         cbzBotones_layout.addWidget(self.btnDibujar)
         cbzBotones_layout.addWidget(self.btnLimpiar)
-        cbzBotones_layout.addWidget(self.btnPrueba)
+       
         cbzBotones.setLayout(cbzBotones_layout)
         
         # Asignar un nombre específico a cada radio button
@@ -287,7 +291,7 @@ class PanelVista(QWidget):
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
         self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
-        self.btnPrueba.clicked.connect(self.DibujaPrueba)
+        
     
     def DibujaPrueba(self):
         self.LimpiarLienzo()
