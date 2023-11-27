@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout,QHBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 
 class MiDialogo(QDialog):
     def __init__(self, parent=None):
@@ -34,9 +35,18 @@ class MiDialogo(QDialog):
         valor1 = self.edit1.text()
         valor2 = self.edit2.text()
         valor3=self.edit3.text()
+
         # Almacenar los valores como atributos de la instancia
         self.valor1 = valor1
         self.valor2 = valor2
         self.valor3= valor3
+        if self.valor1 != '' and self.valor2 != '' and self.valor3 != '':
         # Cerrar el cuadro de diálogo con aceptación
-        self.accept()
+            self.accept()
+        else:
+            alerta = QMessageBox()
+            alerta.setIcon(QMessageBox.Warning)
+            alerta.setText("Error")
+            alerta.setInformativeText("Ingrese los datos correctos.")
+            alerta.setWindowTitle("Alerta")
+            alerta.exec_()

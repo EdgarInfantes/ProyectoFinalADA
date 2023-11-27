@@ -11,6 +11,7 @@ from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from Arista import MiDialogo
 from matplotlib.patches import FancyArrow
+from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
 
 from PyQt5.QtWidgets import QScrollBar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -26,10 +27,6 @@ altura = None
 posX = None
 posY = None
 
-class Node:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
 
 class Lienzo:
     def __init__(self, main_window):
@@ -48,10 +45,27 @@ class Lienzo:
 
     def DibujarArista(self, posNodo1, posNodo2,peso=1):
         print(f"HOLIS: {posNodo1} , {posNodo2}")
-        self.graph.add_edge(posNodo1, posNodo2,weight=peso)
-        self.edge_colors[(posNodo1, posNodo2)] = "black"
-        self.edge_weights[(posNodo1, posNodo2)] = peso
-        self.DibujarGrafo()
+        if posNodo1 in self.graph.nodes() and posNodo2 in self.graph.nodes():
+            self.graph.add_edge(posNodo1, posNodo2,weight=peso)
+            self.edge_colors[(posNodo1, posNodo2)] = "black"
+            self.edge_weights[(posNodo1, posNodo2)] = peso
+            self.DibujarGrafo()
+        else:
+            if posNodo1 not in self.graph.nodes():
+                msg = f"El nodo {posNodo1} no se encuentra."
+            if posNodo2 not in self.graph.nodes():
+                msg = f"El nodo {posNodo2} no se encuentra."
+            if posNodo1 not in self.graph.nodes() and posNodo2 not in self.graph.nodes(): 
+                msg = "Los nodos no se encuentran."
+            self.Alertas(msg)
+
+    def Alertas(self, mensaje):
+        alerta = QMessageBox()
+        alerta.setIcon(QMessageBox.Warning)
+        alerta.setText("Elemento no encontrado")
+        alerta.setInformativeText(mensaje)
+        alerta.setWindowTitle("Alerta")
+        alerta.exec_()
 
     def MouseClick(self, event):
         print("Click")
@@ -308,7 +322,10 @@ class PanelVista(QWidget):
             valor2 = dialogo.valor2
             valor3 = dialogo.valor3
             print(self.lienzo.graph.nodes()) # Para ver los Nodos
-            self.lienzo.DibujarArista(int(valor1), int(valor2),int(valor3))
+            if valor1 != None and valor2 != None and valor3 != None:
+                self.lienzo.DibujarArista(int(valor1), int(valor2),int(valor3))
+            else:
+                self.lienzo.Alertas("Ingresar valores correctos")
 
     def LimpiarLienzo(self):
         self.lienzo.Limpiar()
