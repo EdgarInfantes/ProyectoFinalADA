@@ -38,11 +38,13 @@ class Lienzo:
         self.ax.axis('off')
         self.rect = plt.Rectangle((0,0), 1, 1, linewidth=2, edgecolor='black', facecolor='none')
         self.ax.add_patch(self.rect)
+
     def setTipoGrafo(self, tipo):
         if(tipo=="Dirigido"):
             self.graph=nx.DiGraph()
         if(tipo=="NoDirigido"):
             self.graph=nx.Graph()
+
     def DibujarArista(self, posNodo1, posNodo2,peso=1):
         if posNodo1 in self.graph.nodes() and posNodo2 in self.graph.nodes():
             self.graph.add_edge(posNodo1, posNodo2,weight=peso)
@@ -61,10 +63,24 @@ class Lienzo:
     def Alertas(self, mensaje):
         alerta = QMessageBox()
         alerta.setIcon(QMessageBox.Warning)
-        alerta.setText("Elemento no encontrado")
-        alerta.setInformativeText(mensaje)
-        alerta.setWindowTitle("Alerta")
-        alerta.exec_()
+        if mensaje == "Cambiando tipo de grafo.":
+            alerta.setText('Se borrará tu avance. \n ¿Estás seguro de continuar?')
+            alerta.setWindowTitle('Alerta')
+            btnSi = alerta.addButton('Sí', QMessageBox.YesRole)
+            btnNo = alerta.addButton('Cancelar', QMessageBox.NoRole)
+            alerta.exec_()
+
+            if alerta.clickedButton() == btnSi:
+                self.Limpiar()
+                return True
+            elif alerta.clickedButton() == btnNo:
+                return False
+
+        else:
+            alerta.setText("Elemento no encontrado")
+            alerta.setInformativeText(mensaje)
+            alerta.setWindowTitle("Alerta")
+            alerta.exec_()
 
     def MouseClick(self, event):
         if event.xdata is not None and event.ydata is not None:
@@ -251,7 +267,7 @@ class PanelVista(QWidget):
         cabezera_layout.addWidget(cbzBotones)
         
         cabezera.setLayout(cabezera_layout)
-        cabezera.setFixedHeight(210)
+        cabezera.setFixedHeight(290) ### AJUSTA LA PANTALLa
 
         self.lienzo = Lienzo(self)
         grafoUI_layout = QVBoxLayout()
@@ -267,13 +283,31 @@ class PanelVista(QWidget):
         self.rbDirigido.clicked.connect(self.setTipoGrafo)
         self.rbNoDirigido.clicked.connect(self.setTipoGrafo)
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
+        #self.rbNoDirigido.toggled.connect(lambda state = self.rbNoDirigido.isChecked(): self.CambioTipoGrafo(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
         self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
+
     def setTipoGrafo(self):
-        if(self.rbDirigido.isChecked()):
-            self.lienzo.setTipoGrafo("Dirigido")
-        elif(self.rbNoDirigido.isChecked()):
-            self.lienzo.setTipoGrafo("NoDirigido")
+        if self.lienzo.graph.number_of_nodes() == 0:
+            if(self.rbDirigido.isChecked()):
+                self.lienzo.setTipoGrafo("Dirigido")
+
+            elif(self.rbNoDirigido.isChecked()):
+                self.lienzo.setTipoGrafo("NoDirigido")
+
+        else:
+            if(self.rbDirigido.isChecked()):
+                if self.lienzo.Alertas("Cambiando tipo de grafo."):
+                    self.lienzo.setTipoGrafo("Dirigido")
+                else:
+                    self.rbNoDirigido.setChecked(True)
+
+            elif(self.rbNoDirigido.isChecked()):
+                if self.lienzo.Alertas("Cambiando tipo de grafo."):
+                    self.lienzo.setTipoGrafo("NoDirigido")
+                else:
+                    self.rbDirigido.setChecked(True)
+
     def DibujaPrueba(self):
         self.LimpiarLienzo()
         self.lienzo.edge_colors.clear()
