@@ -23,10 +23,10 @@ ancho = None
 altura = None
 posX = None
 posY = None
-
+TipoGrafo="NoDirigido"
 class Lienzo:
     def __init__(self, main_window):
-        self.main_window = main_window
+        self.main_window = main_window    
         self.graph = nx.Graph()
         self.edge_colors={}
         self.edge_weights = {} 
@@ -38,7 +38,11 @@ class Lienzo:
         self.ax.axis('off')
         self.rect = plt.Rectangle((0,0), 1, 1, linewidth=2, edgecolor='black', facecolor='none')
         self.ax.add_patch(self.rect)
-
+    def setTipoGrafo(self, tipo):
+        if(tipo=="Dirigido"):
+            self.graph=nx.DiGraph()
+        if(tipo=="NoDirigido"):
+            self.graph=nx.Graph()
     def DibujarArista(self, posNodo1, posNodo2,peso=1):
         if posNodo1 in self.graph.nodes() and posNodo2 in self.graph.nodes():
             self.graph.add_edge(posNodo1, posNodo2,weight=peso)
@@ -89,7 +93,6 @@ class Lienzo:
             nx.draw_networkx_edge_labels(self.graph, pos=self.pos, edge_labels=edge_labels, ax=self.ax)
         self.rect.set_edgecolor(original_edgecolor)
         plt.draw()
-
     def GuardarIMG(self):
         file_path, _ = QFileDialog.getSaveFileName(self.main_window, 'Guardar Imagen', '', 'PNG Files (*.png);;All Files (*)')
         if file_path:
@@ -110,6 +113,10 @@ class Lienzo:
             self.edge_colors[(nodo1,nodo2)] = color
             self.edge_colors[(nodo2,nodo1)] = color
         self.DibujarGrafo()
+    def setAristaColorDirigido(self,listaAristas,color):
+        for tupla in listaAristas:
+            nodo1,nodo2=tupla
+            self.edge_colors[(nodo1,nodo2)] = color
 
     def Limpiar(self):
         self.graph.clear()
@@ -213,6 +220,15 @@ class PanelVista(QWidget):
         cbzAlgoritmo_layout.addWidget(lblAlgoritmo)
         cbzAlgoritmo_layout.addWidget(lblTipo)
         cbzAlgoritmo.setLayout(cbzAlgoritmo_layout)
+        
+        cbzTipoGrafo=QGroupBox("Selecciona el tipo de grafo")
+        self.rbDirigido=QRadioButton("Grafo Dirigido")
+        self.rbNoDirigido=QRadioButton("Grafo No Dirigido")
+        cbzTipoGrafo_layout=QHBoxLayout()
+        cbzTipoGrafo_layout.addWidget(self.rbNoDirigido)
+        cbzTipoGrafo_layout.addWidget(self.rbDirigido)
+        cbzTipoGrafo.setLayout(cbzTipoGrafo_layout)
+
         cbzBotones=QGroupBox("Selecciona una opción")
         self.rbDibNodo = QRadioButton('Dibujar Nodo')
         self.rbDibArista = QRadioButton('Dibujar Arista')
@@ -228,12 +244,14 @@ class PanelVista(QWidget):
         self.rbDibArista.setObjectName('rbDibArista')
         self.rbDibNodo.setChecked(True)
         self.btnDibujar.setEnabled(False)
-
+        self.rbNoDirigido.setChecked(True)
         cabezera_layout = QVBoxLayout()
         cabezera_layout.addWidget(cbzAlgoritmo)
+        cabezera_layout.addWidget(cbzTipoGrafo)
         cabezera_layout.addWidget(cbzBotones)
+        
         cabezera.setLayout(cabezera_layout)
-        cabezera.setFixedHeight(200)
+        cabezera.setFixedHeight(210)
 
         self.lienzo = Lienzo(self)
         grafoUI_layout = QVBoxLayout()
@@ -246,10 +264,16 @@ class PanelVista(QWidget):
         main_layout.addWidget(grafoUI)
         self.setLayout(main_layout)
 
+        self.rbDirigido.clicked.connect(self.setTipoGrafo)
+        self.rbNoDirigido.clicked.connect(self.setTipoGrafo)
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
         self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
-        
+    def setTipoGrafo(self):
+        if(self.rbDirigido.isChecked()):
+            self.lienzo.setTipoGrafo("Dirigido")
+        elif(self.rbNoDirigido.isChecked()):
+            self.lienzo.setTipoGrafo("NoDirigido")
     def DibujaPrueba(self):
         self.LimpiarLienzo()
         self.lienzo.edge_colors.clear()
@@ -276,7 +300,7 @@ class PanelVista(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
 
-    def add_node(self, node):
+    def add_node(self, node):    
         node_id = len(self.lienzo.graph.nodes) + 1
         self.lienzo.graph.add_node(node_id)
         self.lienzo.pos[node_id] = (node.x, node.y)
