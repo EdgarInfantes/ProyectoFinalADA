@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import QScrollBar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from Utilidades import Operaciones as op
 from collections import deque
-
+from DialogNodo import *
 centralWidget = None
 panel = None
 ancho = None
@@ -139,7 +139,9 @@ class Lienzo:
         self.pos = {}
         self.edge_colors.clear()
         self.DibujarGrafo()
-
+    def EliminarNodo(self,IdNodo):
+        self.graph.remove_node(IdNodo)
+        self.DibujarGrafo()
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -249,11 +251,14 @@ class PanelVista(QWidget):
         self.rbDibNodo = QRadioButton('Dibujar Nodo')
         self.rbDibArista = QRadioButton('Dibujar Arista')
         self.btnDibujar = QPushButton('Ingresar Puntos')
+        self.btnEliminarNodo=QPushButton('Elimina Nodo')
         self.btnLimpiar = QPushButton('Limpiar')
         cbzBotones_layout=QHBoxLayout()
         cbzBotones_layout.addWidget(self.rbDibNodo)
         cbzBotones_layout.addWidget(self.rbDibArista)
         cbzBotones_layout.addWidget(self.btnDibujar)
+        cbzBotones_layout.addWidget(self.btnDibujar)
+        cbzBotones_layout.addWidget(self.btnEliminarNodo)
         cbzBotones_layout.addWidget(self.btnLimpiar)
         cbzBotones.setLayout(cbzBotones_layout)
 
@@ -285,6 +290,7 @@ class PanelVista(QWidget):
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         #self.rbNoDirigido.toggled.connect(lambda state = self.rbNoDirigido.isChecked(): self.CambioTipoGrafo(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
+        self.btnEliminarNodo.clicked.connect(self.EliminaNodo)
         self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
 
     def setTipoGrafo(self):
@@ -377,7 +383,13 @@ class PanelVista(QWidget):
                 self.lienzo.DibujarArista(int(valor1), int(valor2),int(valor3))
             else:
                 self.lienzo.Alertas("Ingresar valores correctos")
-
+    def EliminaNodo(self):
+        dialogNodo=MiDialogoNodoEliminar()
+        resultado = dialogNodo.exec_()
+        if resultado == QDialog.Accepted:
+            nodoID=int(dialogNodo.valor1)
+            print(nodoID)
+            self.lienzo.EliminarNodo(nodoID)
     def LimpiarLienzo(self):
         self.lienzo.Limpiar()
 
