@@ -303,6 +303,7 @@ class MainWindow(QMainWindow):
         #self.lienzo.setAristaColor(aristas,"blue")
         inicio = centralWidget.solicitaInicio()
         print(centralWidget.BFS(inicio))
+        
 
     def KRUSKAL(self):
         centralWidget.KRUSKAL()
@@ -508,32 +509,35 @@ class PanelVista(QWidget):
     def BFS(self,inicio):
         content=""
         aristas=[]
-        grafo=self.lienzo.getPesos()
-        visited = set()  
-        queue = deque([(inicio, None)])
-        vecinosCargados=set()
-        while queue:
-            node, prev_node = queue.popleft()
-            if node not in visited:
-                visited.add(node)
-            if prev_node is not None:
-                tupla=(prev_node,node)
-                nodo1=str(tupla[0])
-                nodo2=str(tupla[1])
-                step=str(f"{nodo1}->{nodo2}\n")
-                content=content+step
-                
+        if inicio in self.lienzo.graph.nodes():
+            grafo=self.lienzo.getPesos()
+            visited = set()  
+            queue = deque([(inicio, None)])
+            vecinosCargados=set()
+            while queue:
+                node, prev_node = queue.popleft()
+                if node not in visited:
+                    visited.add(node)
+                if prev_node is not None:
+                    tupla=(prev_node,node)
+                    nodo1=str(tupla[0])
+                    nodo2=str(tupla[1])
+                    step=str(f"{nodo1}->{nodo2}\n")
+                    content=content+step
+                    
 
-                aristas.append(tupla)
-            neighbors = op.getVecinos(grafo,node)
-            for neighbor in neighbors:
-                if neighbor not in visited and neighbor not in vecinosCargados:
-                    vecinosCargados.add(neighbor)
-                    queue.append((neighbor, node))
-        print(content)
-        panel.setContent(content)
-        
-        self.lienzo.setAristaColor(aristas, "blue")
+                    aristas.append(tupla)
+                neighbors = op.getVecinos(grafo,node)
+                for neighbor in neighbors:
+                    if neighbor not in visited and neighbor not in vecinosCargados:
+                        vecinosCargados.add(neighbor)
+                        queue.append((neighbor, node))
+            print(content)
+            panel.setContent(content)
+            
+            self.lienzo.setAristaColor(aristas, "blue")
+        else:
+            self.lienzo.Alertas(f"El nodo {inicio} no se encuentra.")
 
     def KRUSKAL(self):
         grafo=self.lienzo.getPesos()

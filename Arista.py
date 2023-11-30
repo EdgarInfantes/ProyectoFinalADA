@@ -1,5 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout,QHBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+from PyQt5.QtGui import QIntValidator
+
 
 class MiDialogo(QDialog):
     def __init__(self, parent=None):
@@ -13,16 +15,19 @@ class MiDialogo(QDialog):
 
         label1 = QLabel('Nodo Padre:')
         self.edit1 = QLineEdit(self)
+        self.edit1.setValidator(QIntValidator())
         layout.addWidget(label1)
         layout.addWidget(self.edit1)
 
         label2 = QLabel('Nodo Hijo:')
         self.edit2 = QLineEdit(self)
+        self.edit2.setValidator(QIntValidator())
         layout.addWidget(label2)
         layout.addWidget(self.edit2)
 
         label3 = QLabel('Peso:')
         self.edit3 = QLineEdit(self)
+        self.edit3.setValidator(QIntValidator())
         layout.addWidget(label3)
         layout.addWidget(self.edit3)
 

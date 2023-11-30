@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout,QHBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox
+from PyQt5.QtGui import QIntValidator
 
 
 class dialogoNodoInicio(QDialog):
@@ -12,6 +13,7 @@ class dialogoNodoInicio(QDialog):
 
         label1 = QLabel('Ingresa ID del Nodo:')
         self.edit1 = QLineEdit(self)
+        self.edit1.setValidator(QIntValidator())
         layout.addWidget(label1)
         layout.addWidget(self.edit1)
       
