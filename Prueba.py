@@ -18,6 +18,7 @@ from Utilidades import Operaciones as op
 from collections import deque
 import DialogNodo as DN
 import DialogoInicio as DI
+import json
 
 
 centralWidget = None
@@ -116,9 +117,63 @@ class Lienzo:
         self.rect.set_edgecolor(original_edgecolor)
         plt.draw()
     def GuardarIMG(self):
-        file_path, _ = QFileDialog.getSaveFileName(self.main_window, 'Guardar Imagen', '', 'PNG Files (*.png);;All Files (*)')
-        if file_path:
-            self.fig.savefig(file_path, bbox_inches='tight', pad_inches=0.1)
+        ruta, _ = QFileDialog.getSaveFileName(self.main_window, 'Guardar Imagen', '', 'PNG Files (*.png);;All Files (*)')
+        if ruta:
+            self.fig.savefig(ruta, bbox_inches='tight', pad_inches=0.1)
+
+    def guardarEnJSON(self):
+        ruta, _ = QFileDialog.getSaveFileName(self.main_window, 'Guardar Grafo', '', 'JSON Files (*.json);;All Files (*)')
+        if ruta:
+            data = {
+                "nodes": list(self.graph.nodes()),
+                "edges": list(self.graph.edges(data=True)),
+                "pos": {str(k): v for k, v in self.pos.items()},
+                "edge_colors": {str(k): v for k, v in self.edge_colors.items()},
+                "edge_weights": {str(k): v for k, v in self.edge_weights.items()},
+                "graph_type": "Directed" if isinstance(self.graph, nx.DiGraph) else "Undirected"
+            }
+
+            with open(ruta, 'w') as json_file:
+                json.dump(data, json_file, indent=2)
+
+    def cargarJson(self):
+        print("Llega")
+        #main_window = self.window()
+        ruta, _ = QFileDialog.getOpenFileName(self.main_window, 'Cargar Grafo', '', 'JSON Files (*.json);;All Files (*)')
+        if ruta:
+            with open(ruta, 'r') as json_file:
+                data = json.load(json_file)
+                # Limpiar el lienzo antes de cargar el nuevo grafo
+                self.Limpiar()
+                # Recuperar la información del grafo desde el archivo JSON
+                nodes = data.get("nodes", [])
+                edges = data.get("edges", [])
+                pos = data.get("pos", {})
+                edge_colors = data.get("edge_colors", {})
+                edge_weights = data.get("edge_weights", {})
+                graph_type = data.get("graph_type", "Undirected")
+
+                # Crear un nuevo grafo
+                if graph_type == "Directed":
+                    self.graph = nx.DiGraph()
+                else:
+                    self.graph = nx.Graph()
+
+                # Agregar nodos y bordes al grafo
+                self.graph.add_nodes_from(nodes)
+                self.graph.add_edges_from(edges)
+
+                # Restaurar la posición de los nodos
+                self.pos = {eval(k): v for k, v in pos.items()}
+
+                # Restaurar los colores de las aristas
+                self.edge_colors = {eval(k): v for k, v in edge_colors.items()}
+
+                # Restaurar los pesos de las aristas (si los hay)
+                self.edge_weights = {eval(k): v for k, v in edge_weights.items()}
+
+                # Dibujar el grafo
+                self.DibujarGrafo()
 
     def getNodos(self):
         return self.graph.nodes()
@@ -189,6 +244,14 @@ class MainWindow(QMainWindow):
         btnGuardarImagen.triggered.connect(self.GuardarImagen)
         menuArchivo.addAction(btnGuardarImagen)
 
+        btnGuardarJson=QAction('Guardar Avance', self)
+        btnGuardarJson.triggered.connect(self.GuardarJson)
+        menuArchivo.addAction(btnGuardarJson)
+
+        btnCargarJson=QAction('Cargar Avance', self)
+        btnCargarJson.triggered.connect(self.CargarJson)
+        menuArchivo.addAction(btnCargarJson)
+
         btnGrafoPrueba=QAction('Grafo de Prueba', self)
         btnGrafoPrueba.triggered.connect(self.dibujaPruebaGrafo)
         menuGrafos.addAction(btnGrafoPrueba)
@@ -227,6 +290,12 @@ class MainWindow(QMainWindow):
 
     def GuardarImagen(self):
         centralWidget.GuardarImagen()
+
+    def GuardarJson(self):
+        centralWidget.GuardarJson()
+    
+    def CargarJson(self):
+        centralWidget.CargarJson()
 
     def BFS(self):
 
@@ -429,6 +498,12 @@ class PanelVista(QWidget):
 
     def GuardarImagen(self):
         self.lienzo.GuardarIMG()
+    
+    def GuardarJson(self):
+        self.lienzo.guardarEnJSON()
+    
+    def CargarJson(self):
+        self.lienzo.cargarJson()
 
     def BFS(self,inicio):
         content=""
