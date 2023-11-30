@@ -397,6 +397,7 @@ class PanelVista(QWidget):
         self.lienzo.GuardarIMG()
 
     def BFS(self,inicio):
+        content=""
         aristas=[]
         grafo=self.lienzo.getPesos()
         visited = set()  
@@ -408,13 +409,21 @@ class PanelVista(QWidget):
                 visited.add(node)
             if prev_node is not None:
                 tupla=(prev_node,node)
-                print(tupla)
+                nodo1=str(tupla[0])
+                nodo2=str(tupla[1])
+                step=str(f"{nodo1}->{nodo2}\n")
+                content=content+step
+                
+
                 aristas.append(tupla)
             neighbors = op.getVecinos(grafo,node)
             for neighbor in neighbors:
                 if neighbor not in visited and neighbor not in vecinosCargados:
                     vecinosCargados.add(neighbor)
                     queue.append((neighbor, node))
+        print(content)
+        panel.setContent(content)
+        
         self.lienzo.setAristaColor(aristas,"blue")
 
     def KRUSKAL(self):
@@ -433,7 +442,9 @@ class PanelVista(QWidget):
                 if(nodo2 not in visitados ):
                     visitados.add(nodo2)  
                     tuplaArista=(nodo1 , nodo2)
+                    
                     print(tuplaArista)
+                    
                     camino.append(tuplaArista)
         self.lienzo.setAristaColor(camino,"blue")
 
@@ -476,6 +487,24 @@ class PanelVista(QWidget):
 class Panel(QWidget):
     def __init__(self):
         super().__init__()
+        self.content=""
+        self.initUI()
+
+    def initUI(self):
+        #self.content_label=QLabel(self.content)
+        #self.content_label.setFixedSize(100,100)
+        self.scrollarea = QScrollArea(self)
+        self.scrollarea.setGeometry(0, 0, 300, 200)
+        self.scrollarea.setWidgetResizable(False)
+        self.layoutInit=QVBoxLayout()
+        self.layoutInit.addWidget(self.scrollarea)
+        self.setLayout(self.layoutInit)
+        
+    def setContent(self,newcontent):
+        content_label=QLabel(newcontent)
+        self.scrollarea.setWidget(content_label)
+    
+        
 
 app = QApplication([])
 window = MainWindow()
