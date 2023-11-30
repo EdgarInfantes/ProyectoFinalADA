@@ -16,6 +16,9 @@ from PyQt5.QtWidgets import QScrollBar
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from Utilidades import Operaciones as op
 from collections import deque
+import DialogNodo as DN
+import DialogoInicio as DI
+
 
 centralWidget = None
 panel = None
@@ -85,7 +88,10 @@ class Lienzo:
     def MouseClick(self, event):
         if event.xdata is not None and event.ydata is not None:
             if self.main_window.dibNodoIsSelected():
-                node_id = len(self.graph.nodes) + 1
+                if len(self.graph.nodes()) == 0:
+                    node_id = 1
+                else:
+                    node_id = max(self.graph.nodes()) + 1
                 self.graph.add_node(node_id)
                 self.pos[node_id] = (event.xdata, event.ydata)
                 if self.main_window.dibNodoIsSelected():
@@ -124,12 +130,21 @@ class Lienzo:
         return nx.get_edge_attributes(self.graph, 'weight')
     
     def setAristaColor(self,listaAristas,color):
+
+        #Reseteo el color antes de pintar
+        for edge in self.graph.edges():
+            self.edge_colors[edge] = 'black'
+
         for tupla in listaAristas:
             nodo1,nodo2=tupla
             self.edge_colors[(nodo1,nodo2)] = color
             self.edge_colors[(nodo2,nodo1)] = color
         self.DibujarGrafo()
+
     def setAristaColorDirigido(self,listaAristas,color):
+        for edge in self.graph.edges():
+            self.edge_colors[edge] = 'black'
+            
         for tupla in listaAristas:
             nodo1,nodo2=tupla
             self.edge_colors[(nodo1,nodo2)] = color
@@ -139,6 +154,14 @@ class Lienzo:
         self.pos = {}
         self.edge_colors.clear()
         self.DibujarGrafo()
+    def EliminarNodo(self,IdNodo):
+        try:
+            print("Antes: ", self.graph.nodes())
+            self.graph.remove_node(IdNodo)
+            print("Despues: ", self.graph.nodes())
+            self.DibujarGrafo()
+        except:
+            self.Alertas(f"El nodo {IdNodo} no se encuentra.")
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -206,8 +229,11 @@ class MainWindow(QMainWindow):
         centralWidget.GuardarImagen()
 
     def BFS(self):
+
         print("BFS ENTRE MAIN")
-        print(centralWidget.BFS(1))
+        #self.lienzo.setAristaColor(aristas,"blue")
+        inicio = centralWidget.solicitaInicio()
+        print(centralWidget.BFS(inicio))
 
     def KRUSKAL(self):
         centralWidget.KRUSKAL()
@@ -222,7 +248,7 @@ class MainWindow(QMainWindow):
         centralWidget.DibujaPrueba()
     
 class PanelVista(QWidget):
-    def __init__(self,escalaAncho, escalaAlto):
+    def __init__(self, escalaAncho, escalaAlto):
         super().__init__()
         self.ancho = escalaAncho
         self.alto = escalaAlto
@@ -249,11 +275,14 @@ class PanelVista(QWidget):
         self.rbDibNodo = QRadioButton('Dibujar Nodo')
         self.rbDibArista = QRadioButton('Dibujar Arista')
         self.btnDibujar = QPushButton('Ingresar Puntos')
+        self.btnEliminarNodo=QPushButton('Elimina Nodo')
         self.btnLimpiar = QPushButton('Limpiar')
         cbzBotones_layout=QHBoxLayout()
         cbzBotones_layout.addWidget(self.rbDibNodo)
         cbzBotones_layout.addWidget(self.rbDibArista)
         cbzBotones_layout.addWidget(self.btnDibujar)
+        cbzBotones_layout.addWidget(self.btnDibujar)
+        cbzBotones_layout.addWidget(self.btnEliminarNodo)
         cbzBotones_layout.addWidget(self.btnLimpiar)
         cbzBotones.setLayout(cbzBotones_layout)
 
@@ -285,6 +314,7 @@ class PanelVista(QWidget):
         self.rbDibArista.toggled.connect(lambda state=self.rbDibArista.isChecked(): self.onRadioButtonToggled(state))
         #self.rbNoDirigido.toggled.connect(lambda state = self.rbNoDirigido.isChecked(): self.CambioTipoGrafo(state))
         self.btnDibujar.clicked.connect(self.PideNodos)
+        self.btnEliminarNodo.clicked.connect(self.EliminaNodo)
         self.btnLimpiar.clicked.connect(self.LimpiarLienzo)
 
     def setTipoGrafo(self):
@@ -377,6 +407,22 @@ class PanelVista(QWidget):
                 self.lienzo.DibujarArista(int(valor1), int(valor2),int(valor3))
             else:
                 self.lienzo.Alertas("Ingresar valores correctos")
+    def EliminaNodo(self):
+        dialogNodo=DN.MiDialogoNodoEliminar()
+        resultado = dialogNodo.exec_()
+        if resultado == QDialog.Accepted:
+            nodoID=int(dialogNodo.valor1)
+            print(nodoID)
+            self.lienzo.EliminarNodo(nodoID)
+    
+
+    def solicitaInicio(self):
+        dialogN = DI.dialogoNodoInicio()
+        result = dialogN.exec_()
+        if result == QDialog.Accepted:
+            nodoID=int(dialogN.valor1)
+            print(nodoID)
+            return nodoID
 
     def LimpiarLienzo(self):
         self.lienzo.Limpiar()
@@ -385,6 +431,7 @@ class PanelVista(QWidget):
         self.lienzo.GuardarIMG()
 
     def BFS(self,inicio):
+        content=""
         aristas=[]
         grafo=self.lienzo.getPesos()
         visited = set()  
@@ -396,14 +443,22 @@ class PanelVista(QWidget):
                 visited.add(node)
             if prev_node is not None:
                 tupla=(prev_node,node)
-                print(tupla)
+                nodo1=str(tupla[0])
+                nodo2=str(tupla[1])
+                step=str(f"{nodo1}->{nodo2}\n")
+                content=content+step
+                
+
                 aristas.append(tupla)
             neighbors = op.getVecinos(grafo,node)
             for neighbor in neighbors:
                 if neighbor not in visited and neighbor not in vecinosCargados:
                     vecinosCargados.add(neighbor)
                     queue.append((neighbor, node))
-        self.lienzo.setAristaColor(aristas,"blue")
+        print(content)
+        panel.setContent(content)
+        
+        self.lienzo.setAristaColor(aristas, "blue")
 
     def KRUSKAL(self):
         grafo=self.lienzo.getPesos()
@@ -421,7 +476,9 @@ class PanelVista(QWidget):
                 if(nodo2 not in visitados ):
                     visitados.add(nodo2)  
                     tuplaArista=(nodo1 , nodo2)
+                    
                     print(tuplaArista)
+                    
                     camino.append(tuplaArista)
         self.lienzo.setAristaColor(camino,"blue")
 
@@ -464,6 +521,24 @@ class PanelVista(QWidget):
 class Panel(QWidget):
     def __init__(self):
         super().__init__()
+        self.content=""
+        self.initUI()
+
+    def initUI(self):
+        #self.content_label=QLabel(self.content)
+        #self.content_label.setFixedSize(100,100)
+        self.scrollarea = QScrollArea(self)
+        self.scrollarea.setGeometry(0, 0, 300, 200)
+        self.scrollarea.setWidgetResizable(False)
+        self.layoutInit=QVBoxLayout()
+        self.layoutInit.addWidget(self.scrollarea)
+        self.setLayout(self.layoutInit)
+        
+    def setContent(self,newcontent):
+        content_label=QLabel(newcontent)
+        self.scrollarea.setWidget(content_label)
+    
+        
 
 app = QApplication([])
 window = MainWindow()
